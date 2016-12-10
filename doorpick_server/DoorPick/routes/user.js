@@ -24,17 +24,17 @@ exports.adduser = function(req, res){
 	       res.end("sorry, an error occurred");
 	       return;
 	     }
-	     var ufname = fields.param("ufname");
-		 	var ulname = fields.param("ulname");
-		 	var email = fields.param("email");
-		 	var mob = fields.param("mob");
-		 	var st_address = fields.param("st_address");
-		 	var city = fields.param("city");
-		 	var state = fields.param("state");
-		 	var zip = fields.param("zip");
-		 	var password = fields.param("password");
-		 	var user_type = fields.param("user_type");
-		 	var token = fields.param("token");
+	     var ufname = fields.ufname;
+		 	var ulname = fields.ulname;
+		 	var email = fields.email;
+		 	var mob = fields.mob;
+		 	var st_address = fields.st_address;
+		 	var city = fields.city;
+		 	var state = fields.state;
+		 	var zip = fields.zip;
+		 	var password = fields.password;
+		 	var user_type = fields.user_type;
+		 	var token = fields.token;
 	
 		 	console.log("user_type"+user_type)
 		 	
@@ -84,9 +84,9 @@ var form = new formidable.IncomingForm();
 	       res.end("sorry, an error occurred");
 	       return;
 	     }
-	 	var email = req.param("email");
-		var password = req.param("password");
-		var token = req.param("token");
+	 	var email = req.email;
+		var password = req.password;
+		var token = req.token;
 		
 		if(token){
 			mongo.connect(mongoURL, function(){
