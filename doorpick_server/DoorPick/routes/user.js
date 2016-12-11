@@ -75,55 +75,97 @@ exports.signInUser = function(req, res){
 	
 	console.log("This is a UpdatePost's status API call");
 	
-	var form = new formidable.IncomingForm();
+//	var form = new formidable.IncomingForm();
+//	
+//	var results = {};
+//	form.parse(req, function(err, fields, files) {
+//	     if(err){
+//	       console.log(err);
+//	       res.end("sorry, an error occurred");
+//	       return;
+//	     }
+//	 	var email = fields.email;
+//		var password = fields.password;
+//		var token = fields.token;
+//		
+//		if(token){
+//			mongo.connect(mongoURL, function(){
+//				
+//				//console.log('Connected to mongo at: ' + mongoURL);	
+//				var coll = mongo.collection('users');
+//				console.log("user"+email);
+//				console.log("password"+password);
+//				coll.find( {"email": email, "password":password}, function(err, docs) {
+//					if(docs){
+//						coll.update({"email":email},{$set : {"token": token}}, 
+//									function(err, user){
+//								if (user) {
+//									results.statusCode = 200;
+//									results.message = "Success";
+//									results.data = docs;
+//									res.json(results);
+//								} else {
+//									results.statusCode = 208;
+//									results.message = "Failed for token";
+//									res.json(results);
+//								}
+//							});
+//					}else{	
+//						results.statusCode = 206;
+//						results.message = "Failed";
+//						res.json(results);
+//					}							
+//				});
+//			});
+//		}
+//		else{
+//			results.statusCode = 209;
+//			results.message = "Token empty";
+//			res.json(results);
+//		}
+//	     
+//	});
 	
+
 	var results = {};
-	form.parse(req, function(err, fields, files) {
-	     if(err){
-	       console.log(err);
-	       res.end("sorry, an error occurred");
-	       return;
-	     }
-	 	var email = fields.email;
-		var password = fields.password;
-		var token = fields.token;
-		
-		if(token){
-			mongo.connect(mongoURL, function(){
-				
-				//console.log('Connected to mongo at: ' + mongoURL);	
-				var coll = mongo.collection('users');
-				console.log("user"+email);
-				console.log("password"+password);
-				coll.find( {"email": email, "password":password}, function(err, docs) {
-					if(docs){
-						coll.update({"email":email},{$set : {"token": token}}, 
-									function(err, user){
-								if (user) {
-									results.statusCode = 200;
-									results.message = "Success";
-									results.data = docs;
-									res.json(results);
-								} else {
-									results.statusCode = 208;
-									results.message = "Failed for token";
-									res.json(results);
-								}
-							});
-					}else{	
-						results.statusCode = 206;
-						results.message = "Failed";
-						res.json(results);
-					}							
-				});
+	var email = req.param("email");
+	var password = req.param("password");
+	var token = req.param("token");
+	
+	if(token){
+		mongo.connect(mongoURL, function(){
+			
+			//console.log('Connected to mongo at: ' + mongoURL);	
+			var coll = mongo.collection('users');
+			console.log("user"+email);
+			console.log("password"+password);
+			coll.findOne( {"email": email, "password":password}, function(err, docs) {
+				if(docs){
+					coll.update({"email":email},{$set : {"token": token}}, 
+								function(err, user){
+							if (user) {
+								results.statusCode = 200;
+								results.message = "Success";
+								results.data = docs;
+								res.json(results);
+							} else {
+								results.statusCode = 208;
+								results.message = "Failed for token";
+								res.json(results);
+							}
+						});
+				}else{	
+					results.statusCode = 206;
+					results.message = "Failed";
+					res.json(results);
+				}							
 			});
-		}
-		else{
-			results.statusCode = 209;
-			results.message = "Token empty";
-			res.json(results);
-		}
-	     
-	});
+		});
+	}
+	else{
+		results.statusCode = 209;
+		results.message = "Token empty";
+		res.json(results);
+	}
 	
 };
