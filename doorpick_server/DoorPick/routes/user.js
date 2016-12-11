@@ -14,7 +14,7 @@ exports.adduser = function(req, res){
 	
 	console.log("This is a UpdatePost's status API call");
 	
-	results = {}
+	var results = {};
 	
 	var form = new formidable.IncomingForm();
 	
@@ -36,7 +36,7 @@ exports.adduser = function(req, res){
 		 	var user_type = fields.user_type;
 		 	var token = fields.token;
 	
-		 	console.log("user_type"+user_type)
+		 	console.log("user_type"+user_type);
 		 	
 		 	mongo.connect(mongoURL, function(){
 		 		
@@ -77,7 +77,7 @@ exports.signInUser = function(req, res){
 	
 	var form = new formidable.IncomingForm();
 	
-	results = {}
+	var results = {};
 	form.parse(req, function(err, fields, files) {
 	     if(err){
 	       console.log(err);
@@ -95,7 +95,7 @@ exports.signInUser = function(req, res){
 				var coll = mongo.collection('users');
 				console.log("user"+email);
 				console.log("password"+password);
-				coll.findOne( {"email": email, "password":password}, function(err, docs) {
+				coll.find( {"email": email, "password":password}, function(err, docs) {
 					if(docs){
 						coll.update({"email":email},{$set : {"token": token}}, 
 									function(err, user){
