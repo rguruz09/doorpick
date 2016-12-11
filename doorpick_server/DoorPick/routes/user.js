@@ -75,7 +75,7 @@ exports.signInUser = function(req, res){
 	
 	console.log("This is a UpdatePost's status API call");
 	
-var form = new formidable.IncomingForm();
+	var form = new formidable.IncomingForm();
 	
 	results = {}
 	form.parse(req, function(err, fields, files) {
@@ -84,9 +84,9 @@ var form = new formidable.IncomingForm();
 	       res.end("sorry, an error occurred");
 	       return;
 	     }
-	 	var email = req.email;
-		var password = req.password;
-		var token = req.token;
+	 	var email = fields.email;
+		var password = fields.password;
+		var token = fields.token;
 		
 		if(token){
 			mongo.connect(mongoURL, function(){
@@ -101,6 +101,7 @@ var form = new formidable.IncomingForm();
 								if (user) {
 									results.statusCode = 200;
 									results.message = "Success";
+									results.data = docs;
 									res.json(results);
 								} else {
 									results.statusCode = 208;
