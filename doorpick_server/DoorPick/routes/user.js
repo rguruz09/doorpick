@@ -91,9 +91,10 @@ exports.signInUser = function(req, res){
 		if(token){
 			mongo.connect(mongoURL, function(){
 				
-				console.log('Connected to mongo at: ' + mongoURL);	
+				//console.log('Connected to mongo at: ' + mongoURL);	
 				var coll = mongo.collection('users');
-				
+				console.log("user"+email);
+				console.log("password"+password);
 				coll.findOne( {"email": email, "password":password}, function(err, docs) {
 					if(docs){
 						coll.update({"email":email},{$set : {"token": token}}, 
