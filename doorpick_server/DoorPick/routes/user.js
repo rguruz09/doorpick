@@ -10,6 +10,46 @@ exports.list = function(req, res){
 };
 
 
+function insertDriver(email, lat, long, callback){
+	
+	mongo.connect(mongoURL, function(){
+ 		
+ 		console.log('Connected to mongo at: ' + mongoURL);	
+ 		var coll = mongo.collection('driverloc');
+ 		
+ 		coll.insert({"email":email,"lat":lat,"long":long}, function(err, result){
+					if(err){
+						callback(true, false);
+					}else{
+						callback(false, true);
+					}
+				});
+ 	});
+	
+}
+
+function updateDriver(email, lat, long, callback){
+	
+	mongo.connect(mongoURL, function(){
+		
+		var coll = mongo.collection('driverloc');
+		coll.findOne( {"email": email}, function(err, docs) {
+			if(docs){
+				coll.update({"email":email},{$set : {"lat": lat, "long":long}}, 
+							function(err, user){
+						if (user) {
+							callback(true, false);
+						} else {
+							callback(false, true);
+						}
+					});
+			}else{	
+				callback(false, true);
+			}							
+		});
+	});
+}
+
 exports.adduser = function(req, res){
 	
 	console.log("This is a UpdatePost's status API call");
@@ -19,57 +59,67 @@ exports.adduser = function(req, res){
 	var form = new formidable.IncomingForm();
 	
 	form.parse(req, function(err, fields, files) {
-	     if(err){
+	    if(err){
 	       console.log(err);
 	       res.end("sorry, an error occurred");
 	       return;
-	     }
-	     var ufname = fields.ufname;
-		 	var ulname = fields.ulname;
-		 	var email = fields.email;
-		 	var mob = fields.mob;
-		 	var st_address = fields.st_address;
-		 	var city = fields.city;
-		 	var state = fields.state;
-		 	var zip = fields.zip;
-		 	var password = fields.password;
-		 	var user_type = fields.user_type;
-		 	var token = fields.token;
-	
-		 	console.log("user_type"+user_type);
-		 	
-		 	mongo.connect(mongoURL, function(){
-		 		
-		 		console.log('Connected to mongo at: ' + mongoURL);	
-		 		var coll = mongo.collection('users');
-		 		
-		 		coll.findOne( {"email": email}, function(err, docs) {
-		 			if(docs){
-		 				results.statusCode = 202;
-		 				results.message = "User already registered!!";
-		 				res.json(results);
-		 			}else{	
-		 				coll.insert({"ufname":ufname,"ulname":ulname,"email":email,
-		 					"st_address":st_address,"city":city,"state":state,"zip":zip,
-		 					"mob":mob,"password":password,"user_type":user_type, "token":token}, function(err, result){
-		 						if(err){
-		 							results.statusCode = 204;
-		 							results.message = "Mongo Failed";
-		 							res.json(results);
-		 						}else{
-		 							results.statusCode = 200;
+	    }
+	    var ufname = fields.ufname.replace(/[\n\t\r]/g,"");
+	 	var ulname = fields.ulname.replace(/[\n\t\r]/g,"");
+	 	var email = fields.email.replace(/[\n\t\r]/g,"");
+	 	var mob = fields.mob.replace(/[\n\t\r]/g,"");
+	 	var st_address = fields.st_address.replace(/[\n\t\r]/g,"");
+	 	var city = fields.city.replace(/[\n\t\r]/g,"");
+	 	var state = fields.state.replace(/[\n\t\r]/g,"");
+	 	var zip = fields.zip.replace(/[\n\t\r]/g,"");
+	 	var password = fields.password.replace(/[\n\t\r]/g,"");
+	 	var user_type = fields.user_type.replace(/[\n\t\r]/g,"");
+	 	var token = fields.token.replace(/[\n\t\r]/g,"");
+	 	var lat = fields.lat.replace(/[\n\t\r]/g,"");
+	 	var long = fields.long.replace(/[\n\t\r]/g,"");
+	 	
+	 	console.log("user_type"+user_type);
+	 	
+	 	mongo.connect(mongoURL, function(){
+	 		
+	 		console.log('Connected to mongo at: ' + mongoURL);	
+	 		var coll = mongo.collection('users');
+	 		
+	 		coll.findOne( {"email": email}, function(err, docs) {
+	 			if(docs){
+	 				results.statusCode = 202;
+	 				results.message = "User already registered!!";
+	 				res.json(results);
+	 			}else{	
+	 				coll.insert({"ufname":ufname,"ulname":ulname,"email":email,
+	 					"st_address":st_address,"city":city,"state":state,"zip":zip,
+	 					"mob":mob,"password":password,"user_type":user_type, "token":token}, function(err, result){
+	 						if(err){
+	 							results.statusCode = 204;
+	 							results.message = "Mongo Failed";
+	 							res.json(results);
+	 						}else{
+	 							if(user_type === "driver"){
+	 								insertDriver(email, lat, long, function(yes,no) {
+		 								results.statusCode = 200;
+			 							results.message = "User added successfully!!";
+			 							res.json(results);
+		 							});
+	 							}
+	 							else{
+	 								results.statusCode = 200;
 		 							results.message = "User added successfully!!";
 		 							res.json(results);
-		 						}
-		 					});
-		 			}							
-		 		});
-		 	});
+	 							}
+	 						}
+	 					});
+	 			}							
+	 		});
+	 	});
 	     
 	});
 	     
 };
-
 
 exports.signInUser = function(req, res){
 	
@@ -84,9 +134,11 @@ exports.signInUser = function(req, res){
 	       res.end("sorry, an error occurred");
 	       return;
 	     }
-	 	var email = fields.email;
-		var password = fields.password;
-		var token = fields.token;
+	 	var email = fields.email.replace(/[\n\t\r]/g,"");
+		var password = fields.password.replace(/[\n\t\r]/g,"");
+		var token = fields.token.replace(/[\n\t\r]/g,"");
+		var lat = fields.lat.replace(/[\n\t\r]/g,"");
+	 	var long = fields.long.replace(/[\n\t\r]/g,"");
 		
 		if(token){
 			mongo.connect(mongoURL, function(){
@@ -97,13 +149,18 @@ exports.signInUser = function(req, res){
 				console.log("password"+password);
 				coll.findOne( {"email": email, "password":password}, function(err, docs) {
 					if(docs){
+						
 						coll.update({"email":email},{$set : {"token": token}}, 
 									function(err, user){
 								if (user) {
-									results.statusCode = 200;
-									results.message = "Success";
-									results.data = docs;
-									res.json(results);
+									
+									updateDriver(email, lat, long, function(yes,no) {
+										results.statusCode = 200;
+										results.message = "Success";
+										results.data = docs;
+										res.json(results);
+									
+									});
 								} else {
 									results.statusCode = 208;
 									results.message = "Failed for token";
@@ -123,49 +180,50 @@ exports.signInUser = function(req, res){
 			results.message = "Token empty";
 			res.json(results);
 		}
-	     
-	});
-	
-
-//	var results = {};
-//	var email = req.param("email");
-//	var password = req.param("password");
-//	var token = req.param("token");
-//	
-//	if(token){
-//		mongo.connect(mongoURL, function(){
-//			
-//			//console.log('Connected to mongo at: ' + mongoURL);	
-//			var coll = mongo.collection('users');
-//			console.log("user"+email);
-//			console.log("password"+password);
-//			coll.findOne( {"email": email, "password":password}, function(err, docs) {
-//				if(docs){
-//					coll.update({"email":email},{$set : {"token": token}}, 
-//								function(err, user){
-//							if (user) {
-//								results.statusCode = 200;
-//								results.message = "Success";
-//								results.data = docs;
-//								res.json(results);
-//							} else {
-//								results.statusCode = 208;
-//								results.message = "Failed for token";
-//								res.json(results);
-//							}
-//						});
-//				}else{	
-//					results.statusCode = 206;
-//					results.message = "Failed";
-//					res.json(results);
-//				}							
-//			});
-//		});
-//	}
-//	else{
-//		results.statusCode = 209;
-//		results.message = "Token empty";
-//		res.json(results);
-//	}
-	
+	});	
 };
+
+exports.updateDriverLoc = function(req, res){
+	
+	var form = new formidable.IncomingForm();
+	
+	var results = {};
+	form.parse(req, function(err, fields, files) {
+	     if(err){
+	       console.log(err);
+	       res.end("sorry, an error occurred");
+	       return;
+	     }
+	 	var email = fields.email;
+		var lat = fields.lat;
+		var long = fields.long;
+		
+		mongo.connect(mongoURL, function(){
+			
+			var coll = mongo.collection('driverloc');
+			coll.findOne( {"email": email}, function(err, docs) {
+				if(docs){
+					coll.update({"email":email},{$set : {"lat": lat, "long":long}}, 
+								function(err, user){
+							if (user) {
+								results.statusCode = 200;
+								results.message = "Success";
+								res.json(results);
+							} else {
+								results.statusCode = 208;
+								results.message = "Failed to update loc";
+								res.json(results);
+							}
+						});
+				}else{	
+					results.statusCode = 206;
+					results.message = "Failed";
+					res.json(results);
+				}							
+			});
+		});
+		
+	});
+};
+
+
