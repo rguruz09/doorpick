@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">DoorPick</string>
+
+    <!--<string name="url">http://52.53.185.77:3000/</string>-->
+    <string name="url">http://192.168.0.18:3000/</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="strSignUpLink">No account? Click to Register</string>
+    <string name="txtLinkSignIn">Have an Account? Login</string>
+    <string name="res_btnSignUp">SignUp</string>
+
+    <!-- SignUp strings-->
+    <string name="prompt_Fname">First Name</string>
+    <string name="prompt_Lname">Last Name</string>
+    <string name="prompt_Mobile">Mobile Number</string>
+    <string name="prompt_ConfirmPWD">Confirm Password</string>
+    <string name="title_activity_maps">Map</string>
+
+    <string name="google_maps_key">AIzaSyDORN5DzBzC_mNFTzV9gtWhFnOX8nNqVDc</string>
+
+
+</resources>

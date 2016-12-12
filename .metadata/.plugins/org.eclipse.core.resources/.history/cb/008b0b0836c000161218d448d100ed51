@@ -1,0 +1,81 @@
+var mongo = require("./mongo");
+var formidable = require('formidable');
+var mongoURL = "mongodb://localhost:27017/doorpick";
+
+exports.addNewSchedule = function(req, res){
+	
+	console.log("This is a UpdatePost's status API call");
+	
+	var results = {};
+	
+	var form = new formidable.IncomingForm();
+	
+	form.parse(req, function(err, fields, files) {
+	    if(err){
+	    	console.log(err);
+	    	res.end("sorry, an error occurred");
+	    	return;
+	    }
+	    
+	    var schid = fields.schid;
+	    var email = fields.email;
+	    var pname = fields.pname;
+	 	var pdesc = fields.pdesc;
+	 	var ploc = fields.ploc;
+	 	var pdloc = fields.pdloc;
+	 	var pdate = fields.pdate;
+	 	var ptime = fields.ptime;
+	 	var slat = fields.slat;
+	 	var slong = fields.slong;
+	 	var desclat = fields.desclat;
+	 	var desclong = fields.desclong;
+	 	var sstatus = fields.sstatus;
+
+	 	console.log("schid "+schid);
+	 	
+	 	mongo.connect(mongoURL, function(){
+	 		
+	 		console.log('Connected to mongo at: ' + mongoURL);	
+	 		var coll = mongo.collection('schedules');
+	 		
+	 		coll.insert({"schid":schid,"email":email,"pname":pname,"pdesc":pdesc,
+	 			"ploc":ploc,"pdloc":pdloc,"pdate":pdate,"ptime":ptime,email:msg.email,ratings:5,status:0,isapproved:0}, 
+	 			function(err, schedule){
+	 				if(schedule){
+	 					results.statusCode = 200;
+						results.message = "request added";
+						res.json(results);						
+	 				}
+					else{
+						results.statusCode = 208;
+						results.message = "something went wrong";
+						res.json(results);
+					}
+			});	
+	 		
+	 		coll.findOne( {"email": email}, function(err, docs) {
+	 			if(docs){
+	 				results.statusCode = 202;
+	 				results.message = "User already registered!!";
+	 				res.json(results);
+	 			}else{	
+	 				coll.insert({"ufname":ufname,"ulname":ulname,"email":email,
+	 					"st_address":st_address,"city":city,"state":state,"zip":zip,
+	 					"mob":mob,"password":password,"user_type":user_type, "token":token}, function(err, result){
+	 						if(err){
+	 							results.statusCode = 204;
+	 							results.message = "Mongo Failed";
+	 							res.json(results);
+	 						}else{
+	 							results.statusCode = 200;
+	 							results.message = "User added successfully!!";
+	 							res.json(results);
+	 						}
+	 					});
+	 			}							
+	 		});
+	 	});
+	     
+	});
+	     
+};

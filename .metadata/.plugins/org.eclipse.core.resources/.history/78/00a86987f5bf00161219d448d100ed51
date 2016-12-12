@@ -1,0 +1,102 @@
+var mongo = require("./mongo");
+var formidable = require('formidable');
+var mongoURL = "mongodb://localhost:27017/doorpick";
+
+exports.addNewSchedule = function(req, res){
+	
+	console.log("This is a UpdatePost's status API call");
+	
+	var results = {};
+	
+	var form = new formidable.IncomingForm();
+	
+	form.parse(req, function(err, fields, files) {
+	    if(err){
+	    	console.log(err);
+	    	res.end("sorry, an error occurred");
+	    	return;
+	    }
+	    
+	    var schid = fields.schid;
+	    var email = fields.email;
+	    var pname = fields.pname;
+	 	var pdesc = fields.pdesc;
+	 	var ploc = fields.ploc;
+	 	var pdloc = fields.pdloc;
+	 	var pdate = fields.pdate;
+	 	var ptime = fields.ptime;
+	 	var slat = fields.slat;
+	 	var slong = fields.slong;
+	 	var desclat = fields.desclat;
+	 	var desclong = fields.desclong;
+	 	var sstatus = fields.sstatus;
+
+	 	console.log("schid "+schid);
+	 	
+	 	mongo.connect(mongoURL, function(){
+	 		
+	 		console.log('Connected to mongo at: ' + mongoURL);	
+	 		var coll = mongo.collection('schedules');
+	 		
+	 		coll.insert({"schid":schid,"email":email,"pname":pname,"pdesc":pdesc,
+	 			"ploc":ploc,"pdloc":pdloc,"pdate":pdate,"ptime":ptime,"slat":slat,"slong":slong,"desclat":desclat,"desclong":desclong,"sstatus" :sstatus}, 
+	 			function(err, schedule){
+	 				if(schedule){
+	 					results.statusCode = 200;
+						results.message = "request added";
+						res.json(results);						
+	 				}
+					else{
+						results.statusCode = 208;
+						results.message = "something went wrong";
+						res.json(results);
+					}
+			});	
+	 	});
+	     
+	});
+	     
+};
+
+exports.getAllSchedules = function(req, res){
+	
+	var results = {};
+	
+	var form = new formidable.IncomingForm();
+	
+	form.parse(req, function(err, fields, files) {
+	    if(err){
+	    	console.log(err);
+	    	res.end("sorry, an error occurred");
+	    	return;
+	    }
+	    
+	    var email = fields.email;
+	 	
+	 	mongo.connect(mongoURL, function(){
+	 		
+	 		console.log('Connected to mongo at: ' + mongoURL);	
+	 		var coll = mongo.collection('schedules');
+	 			
+	 		coll.find( { "email" : email },{_id:0, pname:1, pdesc:1, ploc:1, pdloc:1, pdate:1, ptime:1, sstatus:1} ).toArray(function(err, docs) {
+				if(docs){												
+					var myArray = [];
+					for(var i=0; i<docs.length; i++){
+						myArray.push(docs[i]);
+						console.log(docs[i].email);
+						results.statusCode = 200;
+						results.message = "request added";
+						results.data = myArray;
+						res.json(results);	
+					}
+				}else{						
+					results.statusCode = 201;
+					results.message = "No schedules";
+				}			
+			});
+
+	 	});
+	     
+	});
+	     
+};

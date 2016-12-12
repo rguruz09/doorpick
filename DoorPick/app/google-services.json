@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "315434847931",
+    "firebase_url": "https://doordrop-91ef3.firebaseio.com",
+    "project_id": "doordrop-91ef3",
+    "storage_bucket": "doordrop-91ef3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315434847931:android:055f37070c02d2ee",
+        "android_client_info": {
+          "package_name": "com.taf.raghu.doorpick"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "315434847931-e6ls4tdum1ckmre2na7mm9t9rj8p07nh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtlLSaxRxWXy7Gp9q43xZOoTY0CPEEI00"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

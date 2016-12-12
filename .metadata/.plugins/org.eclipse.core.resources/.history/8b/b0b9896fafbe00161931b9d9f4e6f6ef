@@ -1,0 +1,81 @@
+/* GET users listing. */
+
+var mongo = require("./mongo");
+var formidable = require('formidable');
+var mongoURL = "mongodb://localhost:27017/doorpick";
+
+
+exports.list = function(req, res){
+  res.send('respond with a resource');
+};
+
+
+exports.adduser = function(req, res){
+	
+	console.log("This is a UpdatePost's status API call");
+	
+	results = {}
+	
+	var form = new formidable.IncomingForm();
+	
+	form.parse(req, function(err, fields, files) {
+	     if(err){
+	       console.log(err);
+	       res.end("sorry, an error occurred");
+	       return;
+	     }
+	     
+	     
+	});
+	     
+	
+	
+};
+
+
+exports.signInUser = function(req, res){
+	
+	console.log("This is a UpdatePost's status API call");
+	
+	results = {}
+	
+	var email = req.param("email");
+	var password = req.param("password");
+	var token = req.param("token");
+	
+	if(token){
+		mongo.connect(mongoURL, function(){
+			
+			console.log('Connected to mongo at: ' + mongoURL);	
+			var coll = mongo.collection('users');
+			
+			coll.findOne( {"email": email, "password":password}, function(err, docs) {
+				if(docs){
+					coll.update({"email":email},{$set : {"token": token}}, 
+								function(err, user){
+							if (user) {
+								results.statusCode = 200;
+								results.message = "Success";
+								res.json(results);
+							} else {
+								results.statusCode = 208;
+								results.message = "Failed for token";
+								res.json(results);
+							}
+						});
+				}else{	
+					results.statusCode = 206;
+					results.message = "Failed";
+					res.json(results);
+				}							
+			});
+		});
+	}
+	else{
+		results.statusCode = 209;
+		results.message = "Token empty";
+		res.json(results);
+	}
+	
+	
+};
