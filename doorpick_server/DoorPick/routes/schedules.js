@@ -128,9 +128,9 @@ exports.updateScheduleStatus = function(req, res){
 		    
 		    var schid = fields.schid.replace(/[\n\t\r]/g,"");
 			var sstatus = fields.sstatus.replace(/[\n\t\r]/g,"");
-			
+			var email = fields.email.replace(/[\n\t\r]/g,"");			
 			var coll = mongo.collection('schedules');
-			coll.update({"schid":schid},{$set : {"sstatus": sstatus}}, 
+			coll.update({"schid":schid},{$set : {"sstatus": sstatus, "driver_email" : email}}, 
 				function(err, resu){
 					if (resu) {
 						results.statusCode = 200;
@@ -146,4 +146,98 @@ exports.updateScheduleStatus = function(req, res){
 		});
 	
 	});
+};
+
+exports.getMyRides = function(req, res){
+	
+	var results = {};
+	
+	var form = new formidable.IncomingForm();
+	
+	form.parse(req, function(err, fields, files) {
+	    if(err){
+	    	console.log(err);
+	    	res.end("sorry, an error occurred");
+	    	return;
+	    }
+	    
+	    var driver_email = fields.driver_email.replace(/[\n\t\r]/g,"");
+	 	
+	 	mongo.connect(mongoURL, function(db){
+	 		
+	 		if(db){
+	 			
+	 			console.log('Connected to mongo at: ' + mongoURL);	
+		 		var coll = mongo.collection('schedules');
+		 		
+		 		console.log("driver_email "+driver_email);
+		 			 		
+
+		 		coll.find({"driver_email":driver_email}).toArray(function(err, docs) {
+					if(docs){												
+						var myArray = [];
+						console.log("doc length "+docs.length);
+						for(var i=0; i<docs.length; i++){
+							myArray.push(docs[i]);
+							console.log("doc length "+docs[i]);
+						}
+						results.statusCode = 200;
+						results.message = "request added";
+						results.data = myArray;
+						res.json(results);	
+					}else{						
+						results.statusCode = 201;
+						results.message = "No schedules";
+						res.json(results);
+					}	
+					db.close();
+				});
+	 			
+	 		}else{
+	 			results.statusCode = 210;
+				results.message = "Mongo error";
+				res.json(results);
+	 		}
+	 	});
+	});
+};
+
+exports.getScheduleRequests = function(req, res){
+	
+	mongo.connect(mongoURL, function(db){
+ 		
+		var results = {};
+		
+ 		if(db){
+ 			
+	 		var coll = mongo.collection('schedules');			 			 		
+
+	 		coll.find({"sstatus" : "requested"}).toArray(function(err, docs) {
+				if(docs){												
+					var myArray = [];
+					console.log("doc length "+docs.length);
+					for(var i=0; i<docs.length; i++){
+						myArray.push(docs[i]);
+						console.log("doc length "+docs[i]);
+					}
+					results.statusCode = 200;
+					results.message = "requested schedules";
+					results.data = myArray;
+					res.json(results);	
+				}else{						
+					results.statusCode = 201;
+					results.message = "No schedules";
+					res.json(results);
+				}	
+				db.close();
+			});
+ 			
+ 		}else{
+ 			results.statusCode = 210;
+			results.message = "Mongo error";
+			res.json(results);
+ 		}
+ 	});
+		
+	
 };

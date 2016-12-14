@@ -10,32 +10,31 @@ exports.list = function(req, res){
 };
 
 
-function insertDriver(email, lat, long, callback){
-	
-	mongo.connect(mongoURL, function(){
- 		
- 		console.log('Connected to mongo at: ' + mongoURL);	
- 		var coll = mongo.collection('driverloc');
- 		
- 		coll.insert({"email":email,"lat":lat,"long":long}, function(err, result){
-					if(err){
-						callback(true, false);
-					}else{
-						callback(false, true);
-					}
-				});
- 	});
-	
-}
+//function insertDriver(email, lat, long, callback){
+//	
+//	mongo.connect(mongoURL, function(){
+// 		
+// 		console.log('Connected to mongo at: ' + mongoURL);	
+// 		var coll = mongo.collection('driverloc');
+// 		
+// 		coll.insert({"email":email,"lat":lat,"long":long}, function(err, result){
+//					if(err){
+//						callback(true, false);
+//					}else{
+//						callback(false, true);
+//					}
+//				});
+// 	});
+//}
 
-function updateDriver(email, lat, long, callback){
+function updateDriver(email, lat, long, sts, callback){
 	
 	mongo.connect(mongoURL, function(){
 		
-		var coll = mongo.collection('driverloc');
+		var coll = mongo.collection('users');
 		coll.findOne( {"email": email}, function(err, docs) {
 			if(docs){
-				coll.update({"email":email},{$set : {"lat": lat, "long":long}}, 
+				coll.update({"email":email},{$set : {"lat": lat, "long":long, "driver_status":sts}}, 
 							function(err, user){
 						if (user) {
 							callback(true, false);
@@ -49,6 +48,7 @@ function updateDriver(email, lat, long, callback){
 		});
 	});
 }
+
 
 exports.adduser = function(req, res){
 	
@@ -100,7 +100,7 @@ exports.adduser = function(req, res){
 	 							res.json(results);
 	 						}else{
 	 							if(user_type === "driver"){
-	 								insertDriver(email, lat, long, function(yes,no) {
+	 								updateDriver(email, lat, long, "0", function(yes,no) {
 		 								results.statusCode = 200;
 			 							results.message = "User added successfully!!";
 			 							res.json(results);
@@ -154,7 +154,7 @@ exports.signInUser = function(req, res){
 									function(err, user){
 								if (user) {
 									
-									updateDriver(email, lat, long, function(yes,no) {
+									updateDriver(email, lat, long, "1", function(yes,no) {
 										results.statusCode = 200;
 										results.message = "Success";
 										results.data = docs;
@@ -200,7 +200,7 @@ exports.updateDriverLoc = function(req, res){
 		
 		mongo.connect(mongoURL, function(){
 			
-			var coll = mongo.collection('driverloc');
+			var coll = mongo.collection('users');
 			coll.findOne( {"email": email}, function(err, docs) {
 				if(docs){
 					coll.update({"email":email},{$set : {"lat": lat, "long":long}}, 
@@ -226,4 +226,51 @@ exports.updateDriverLoc = function(req, res){
 	});
 };
 
+exports.getAvailDrivers = function(req, res){
+	
+	var results = {};
+		
+	var form = new formidable.IncomingForm();
+		
+	form.parse(req, function(err, fields, files) {
+		    if(err){
+		    	console.log(err);
+		    	res.end("sorry, an error occurred");
+		    	return;
+		    }
+		    
+		    mongo.connect(mongoURL, function(db){
+		 		
+		 		if(db){
+		 			
+			 		var coll = mongo.collection('users');			 			 		
 
+			 		coll.find({"driver_status":"1", "user_type" : "driver"}).toArray(function(err, docs) {
+						if(docs){												
+							var myArray = [];
+							console.log("doc length "+docs.length);
+							for(var i=0; i<docs.length; i++){
+								myArray.push(docs[i]);
+								console.log("doc length "+docs[i]);
+							}
+							results.statusCode = 200;
+							results.message = "request added";
+							results.data = myArray;
+							res.json(results);	
+						}else{						
+							results.statusCode = 201;
+							results.message = "No schedules";
+							res.json(results);
+						}	
+						db.close();
+					});
+		 			
+		 		}else{
+		 			results.statusCode = 210;
+					results.message = "Mongo error";
+					res.json(results);
+		 		}
+		 	});
+		    
+		});
+	};

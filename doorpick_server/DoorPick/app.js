@@ -32,6 +32,9 @@ app.post('/signInUser', users.signInUser);
 app.post('/addNewSchedule', schedules.addNewSchedule);
 app.post('/getAllSchedules', schedules.getAllSchedules);
 app.post('/updateScheduleStatus', schedules.updateScheduleStatus);
+app.post('/getMyRides', schedules.getMyRides);
+app.post('/getAvailDrivers', users.getAvailDrivers);
+app.post('/getScheduleRequests', schedules.getScheduleRequests);
 
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {
