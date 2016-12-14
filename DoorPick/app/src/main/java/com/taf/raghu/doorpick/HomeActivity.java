@@ -38,36 +38,82 @@ public class HomeActivity extends AppCompatActivity
 
     private static SharedPreferences pref;
     private static SharedPreferences.Editor editor;
+    private static String utype;
+    private static String name;
+    private static String email;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
 
         pref = getApplicationContext().getSharedPreferences("MyPref", 1);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        utype = pref.getString("utype",null);
+        utype = pref.getString("utype",null);
+        name = pref.getString("name",null);
+        email = pref.getString("email",null);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ScheduleNew();
-            }
-        });
 
-        loadSchedules();
+
+        if(utype.equals("customer")){
+            setContentView(R.layout.activity_home);
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
+
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(this);
+
+
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ScheduleNew();
+                }
+            });
+
+            loadSchedules();
+        }
+        else {
+
+            setContentView(R.layout.activity_driver_home);
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+
+
+
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout_driver);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
+
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view_driver);
+            navigationView.setNavigationItemSelectedListener(this);
+
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    goLive();
+                }
+            });
+
+
+            loadMyRides();
+
+        }
+
+
 
     }
 
@@ -78,11 +124,22 @@ public class HomeActivity extends AppCompatActivity
         HashMap<String, String> input = new HashMap<String, String>();
         input.put("email", pref.getString("email", null));
 
-        new scheduleTask(input).execute(url);
+        new scheduleTask(input,0).execute(url);
 
     }
 
-    private void handleResponse(JSONObject result){
+    private void loadMyRides(){
+
+        String url = getString(R.string.url) + "getMyRides";
+
+        HashMap<String, String> input = new HashMap<String, String>();
+        input.put("driver_email", pref.getString("email", null));
+
+        new scheduleTask(input, 1).execute(url);
+
+    }
+
+    private void handleResponse(JSONObject result, int resfrom){
 
         try {
 
@@ -100,6 +157,10 @@ public class HomeActivity extends AppCompatActivity
 
                     Schedules scd = new Schedules(jb.getString("schid"),jb.getString("pname"),jb.getString("pdesc"),jb.getString("ploc"),jb.getString("pdate"),
                             jb.getString("ptime"),jb.getString("pdloc"),jb.getString("sstatus"));
+
+                    if(jb.has("driver_email")){
+                        scd.setDriverEmail(jb.getString("driver_email"));
+                    }
                     schedules.add(scd);
                 }
 
@@ -114,11 +175,15 @@ public class HomeActivity extends AppCompatActivity
         FragmentManager fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.mainpage_fragment,new SchedulesListFragment()).commit();
 
-
     }
 
     private void ScheduleNew(){
         Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+    }
+
+    private void goLive(){
+        Intent intent = new Intent(this, DriverMapActivity.class);
         startActivity(intent);
     }
 
@@ -185,15 +250,17 @@ public class HomeActivity extends AppCompatActivity
         HashMap<String,String> formFields;
         String status = "";
         JSONObject httpStatus ;
+        int reqfrom;
 
         private Context mContext;
         //private TaskCompletedStatus mCallback;
 
 
-        public scheduleTask( HashMap<String,String> formFields){
+        public scheduleTask( HashMap<String,String> formFields, int reqfrom){
             this.formFields = formFields;
             //  this.mCallback = (TaskCompletedStatus) context;
             httpStatus = new JSONObject();
+            this.reqfrom = reqfrom;
         }
 
         @Override
@@ -236,7 +303,7 @@ public class HomeActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(JSONObject result) {
             super.onPostExecute(result);
-            handleResponse(result);
+            handleResponse(result, reqfrom);
         }
     }
 

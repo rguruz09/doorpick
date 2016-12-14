@@ -1,9 +1,11 @@
 package com.taf.raghu.doorpick;
 
 import android.*;
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
@@ -235,8 +237,19 @@ public class SignUpActivity extends AppCompatActivity {
             int stscode = result.getInt("statusCode");
 
             if(stscode == 200){
-                Intent intent = new Intent(this, HomeActivity.class);
-                startActivity(intent);
+
+                final Intent intent = new Intent(this, LoginActivity.class);
+                new AlertDialog.Builder(this)
+                        .setTitle("Success..!")
+                        .setMessage("Sign Up success, Please login to continue")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(intent);
+                            }
+                        })
+                        .show();
+
+
             }else {
                 Context context = getApplicationContext();
                 CharSequence text = result.getString("message");

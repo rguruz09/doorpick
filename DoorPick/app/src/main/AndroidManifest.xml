@@ -71,7 +71,11 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".ScheduleDetailsActivity"></activity>
+        <activity android:name=".ScheduleDetailsActivity" />
+        <activity android:name=".DriverHomeActivity" />
+        <activity android:name=".DriverMapActivity" />
+        <activity android:name=".RequestedSchedule_Activity" />
+        <activity android:name=".CurrentRideActivity"></activity>
     </application>
 
 </manifest>

@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -19,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.Manifest;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -32,10 +34,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -69,8 +78,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowHomeEnabled(true);
+//        ActionBar actionBar = getSupportActionBar();
+//        actionBar.setDisplayShowHomeEnabled(true);
 
         //actionBar.setIcon(R.drawable.ic_launcher);
 
@@ -139,6 +148,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             addresses = geocoder.getFromLocation(cur.getLatitude(), cur.getLongitude(), 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
             srclat = Double.toString(cur.getLatitude());
             srclong = Double.toString(cur.getLongitude());
+            getDrivers();
         }
         catch (Exception ex){
 
@@ -147,8 +157,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         strAddr1 = addresses.get(0).getAddressLine(0);
         txtCurLoc.setText(strAddr1);
-
-
 
     }
 
@@ -296,4 +304,107 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         startActivity(intent);
 
     }
+
+
+    public void getDrivers(){
+
+        String url = getString(R.string.url)+"getAvailDrivers";
+
+        HashMap<String,String> input = new HashMap<String,String>();
+
+        new getDriversTask(input).execute(url);
+
+    }
+
+    public void loadDrivers(JSONObject result){
+
+        int stscode = 0;
+        try {
+            stscode = result.getInt("statusCode");
+            if(stscode == 200){
+
+                JSONArray resArray = result.getJSONArray("data");
+                for(int i = 0; i<resArray.length(); i++){
+                    JSONObject jb = (JSONObject) resArray.get(i);
+
+                    double lat = Double.parseDouble(jb.getString("lat"));
+                    double lng = Double.parseDouble(jb.getString("long"));
+
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(lat, lng))
+                            .draggable(false)
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.driver))
+                            .title(jb.getString("ufname")));
+                }
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public class getDriversTask  extends AsyncTask<String, Void, JSONObject> {
+
+        String charset = "UTF-8";
+        String requestURL;
+        HashMap<String,String> formFields;
+        String status = "";
+        JSONObject httpStatus ;
+
+        private Context mContext;
+        //private TaskCompletedStatus mCallback;
+
+
+        public getDriversTask( HashMap<String,String> formFields){
+            this.formFields = formFields;
+            //  this.mCallback = (TaskCompletedStatus) context;
+            httpStatus = new JSONObject();
+        }
+
+
+        @Override
+        protected JSONObject doInBackground(String... url) {
+
+
+            requestURL =  url[0];
+
+            try {
+                MultipartUtility multipart = new MultipartUtility(requestURL, charset);
+
+                if(formFields != null){
+                    if(!(formFields.isEmpty())){
+                        for (HashMap.Entry<String, String> entry : formFields.entrySet()) {
+                            String key = entry.getKey();
+                            String value = entry.getValue();
+                            multipart.addFormField(key,value);
+                        }
+                    }
+                }
+
+                String response = multipart.finishString();
+
+                if( response != null){
+                    try {
+                        httpStatus = new JSONObject(response);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } catch (IOException ex) {
+                System.err.println(ex);
+            }
+            Log.i("MultiAsynk",httpStatus + "");
+            return httpStatus;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            super.onPostExecute(result);
+            loadDrivers(result);
+        }
+    }
+
+
 }

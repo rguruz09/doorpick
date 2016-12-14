@@ -400,8 +400,31 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             int stscode = result.getInt("statusCode");
 
             if(stscode == 200){
+
+                JSONObject data = result.getJSONObject("data");
+
+                String uType = data.getString("user_type");
+
+                editor = pref.edit();
+                editor.putString("email", data.getString("email"));
+                editor.putString("name", data.getString("ufname")+" "+data.getString("ulname"));
+                editor.putString("utype",uType);
+
+                editor.commit();
+
+
                 Intent intent = new Intent(this, HomeActivity.class);
                 startActivity(intent);
+
+//                if(uType.equals("driver")){
+//                    Intent intent = new Intent(this, DriverHomeActivity.class);
+//                    startActivity(intent);
+//                }else{
+//                    Intent intent = new Intent(this, HomeActivity.class);
+//                    startActivity(intent);
+//                }
+
+
             }else {
                 Context context = getApplicationContext();
                 CharSequence text = result.getString("message");
@@ -409,10 +432,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Toast toast = Toast.makeText(context, text, duration);
                 toast.show();
             }
-
-            Intent intent = new Intent(this, HomeActivity.class);
-            startActivity(intent);
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
